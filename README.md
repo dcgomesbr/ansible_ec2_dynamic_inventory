@@ -24,8 +24,9 @@ Pre-requisites:
 
 * ec2.py scripts
 - Although it's in my repo's inventory directory, you can download the latest from:
-  wget https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.ini
-  wget https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.py
+
+  https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.ini
+  https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.py
   
   They must go inside inventory directory, because in ansible.cfg it points inventory = inventory/
   
