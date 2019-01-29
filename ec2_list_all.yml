@@ -13,5 +13,8 @@
 
     - name: List Instances
       debug:
-        msg: "Instance: {{item}}"
-      with_items: "{{instances|json_query('instances[*].public_ip_address')}} {{instances|json_query('instances[*].tags')}} {{instances|json_query('instances[*].placement.availability_zone')}} {{instances|json_query('instances[*].state')}} {{instances|json_query('instances[*].vpc_id')}}"
+        msg: "Statuses: {{item.state}}"
+      with_items:
+        - { instanceId: "{{instances|json_query('instances[*].instance_id')}}", state: "{{instances|json_query('instances[*].state.name')}}" }
+      loop_control:
+        label: "{{ item.instanceId}}"
