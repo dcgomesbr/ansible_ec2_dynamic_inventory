@@ -1,0 +1,71 @@
+---
+### Updates the Admin security group with access to specific NAT'ed IP of the admin's machine
+### example:
+### ansible-playbook ec2_update_admin_ipaddr.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox"
+
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  user: root
+  pre_tasks:
+    - name: Reads role variables
+      include_vars:
+        dir: roles/
+        files_matching: "{{ ec2_role }}.yml"
+  tasks:
+    - name: get this machine's public IP
+      ipify_facts:
+      register: public_ip
+
+    - name: "My Public IP"
+      debug:
+        var: public_ip
+
+    - name: Get EC2 instance IDs
+      run_once: true
+      ec2_instance_facts:
+        region: "{{ ec2_region }}"
+        filters:
+          "tag:Role": "{{ec2_role}}"
+          "instance-state-name": running
+      register: instances
+
+    - name: "List Instances VPCs for {{ ec2_role }}"
+      debug:
+        msg: "Instance: {{ item }}"
+      with_items: "{{instances|json_query('instances[*].vpc_id') | list | unique}}"
+
+    - name: "Clears all rules for {{ sg_name }}"
+      ec2_group:
+        vpc_id: "{{ item }}"
+        name: "{{ sg_name }}"
+        description: "{{ sg_description }}"
+        state: present
+        region: "{{ ec2_region }}"
+        rules:
+      with_items: "{{instances|json_query('instances[*].vpc_id') | list | unique}}"
+
+    - name: Add rule to restricted Security Group with new IP
+      ec2_group:
+        name: "{{ sg_name }}"
+        description: "{{ sg_description }}"
+        vpc_id: "{{ item }}"
+        state: present
+        region: "{{ ec2_region }}"
+        purge_rules: no
+        rules:
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: "{{ public_ip.ansible_facts.ipify_public_ip }}/32"
+      with_items: "{{ instances | json_query('instances[*].vpc_id') | list | unique}}"
+
+    - name: Gets security groups in "{{ instances | json_query('instances[*].vpc_id') | list | unique}}"
+      ec2_group_facts:
+        filters:
+          group-name: "{{ sg_name }}"
+      register: security_groups 
+
+    - name: "Dump SGs"
+      debug:
+        var: security_groups

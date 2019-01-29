@@ -1,0 +1,17 @@
+---
+### Lists all EC2 machines currently provisioned
+
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  user: root
+  tasks:
+    - name: Get EC2 instance IDs
+      run_once: true
+      ec2_instance_facts:
+      register: instances
+
+    - name: List Instances
+      debug:
+        msg: "Instance: {{item}}"
+      with_items: "{{instances|json_query('instances[*].public_ip_address')}} {{instances|json_query('instances[*].tags')}} {{instances|json_query('instances[*].placement.availability_zone')}} {{instances|json_query('instances[*].state')}} {{instances|json_query('instances[*].vpc_id')}}"

@@ -1,0 +1,17 @@
+---
+### This will try to connect to the internet using ipify_facts module and retrieve
+### The NAT'ed IP Public address
+### Useful to setup the SecurityGroup for SSH giving access to your machine only
+
+- name: get public IP
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  user: root
+ 
+  tasks:
+    - name: get public IP
+      ipify_facts:
+      register: public_ip
+    - name: output
+      debug: msg="{{ public_ip }}"

@@ -1,0 +1,11 @@
+STATE_RES_NAME: "${STATE_RES_NAME}"
+ec2_instance_type: "t2.micro"
+ec2_image: "ami-0080e4c5bc078760e"
+ec2_keypair: "keypair"
+ec2_volume_size: 8
+ec2_count: 1
+ec2_subnet_id: "subnet-0908cc9ef6c3063ce"
+# Specify a SG here attached to the VPC or else you won't be able to SSH to the box later
+ec2_security_group_id: "sg-0f4bfbb3884c68f2e"
+sg_name: "SSH access for admin"
+sg_description: "Restricted access to port 22"

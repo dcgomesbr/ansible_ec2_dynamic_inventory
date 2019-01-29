@@ -1,0 +1,31 @@
+---
+### terminate AWS EC/2 instances by role and region
+### example:
+### ansible-playbook ec2_term_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox"
+
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  user: root
+  tasks:
+    - name: Get EC2 instance IDs
+      run_once: true
+      ec2_instance_facts:
+        region: "{{ec2_region}}"
+        filters:
+          "tag:Role": "{{ec2_role}}"
+      register: instances
+
+    - name: display instances
+      run_once: true
+      debug:
+        var: instances
+
+    - name: Remove registered instances
+      run_once: true
+      ec2:
+        state: absent
+        region: "{{ec2_region}}"
+        wait: true
+        instance_ids: "{{instances|json_query('instances[*].instance_id')}}"
+      when: instances
