@@ -1,4 +1,3 @@
-STATE_RES_NAME: "${STATE_RES_NAME}"
 ec2_instance_type: "t2.micro"
 ec2_image: "ami-0080e4c5bc078760e"
 ec2_keypair: "keypair"

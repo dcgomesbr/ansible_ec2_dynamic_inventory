@@ -1,0 +1,69 @@
+---
+### creates a subnet inside an already existent VPC in AWS
+### example:
+### ansible-playbook ec2_setup_subnet.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PrivateSubnet"
+### the ec2_network is also a file suffix that points to a yml file within networks/ directory
+
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  user: root
+  pre_tasks:
+    - name: Reads network variables
+      include_vars:
+        dir: networks/
+        files_matching: "{{ ec2_network }}.yml"
+
+    - name: Reads subnetwork variables
+      include_vars:
+        dir: networks/
+        files_matching: "{{ ec2_subnet }}.yml"
+
+  tasks:
+    - name: "associate subnet to the VPC {{ ec2_vpc_id }}"
+      ec2_vpc_subnet:
+        state: present
+        vpc_id: "{{ ec2_vpc_id }}"
+        region: "{{ ec2_region }}"
+        cidr: "{{ ec2_subnet_cidr }}"
+        map_public: "{{ ec2_map_public }}"
+        resource_tags:
+          Name: "{{ ec2_subnet_name }}"
+      register: subnet
+
+    - name: "Saves the subnet ID {{ subnet.subnet.id }} at networks/{{ ec2_subnet }}.yml"
+      lineinfile:
+        path: networks/{{ ec2_subnet}}.yml
+        regexp: '^ec2_subnet_id: .*$'
+        line: "ec2_subnet_id: {{ subnet.subnet.id }}"
+
+    - name: create IGW
+      ec2_vpc_igw:
+        vpc_id: "{{ ec2_vpc_id }}"
+        region: "{{ ec2_region }}"
+        state: "present"
+        tags:
+          Name: "{{ ec2_igw_name }}"
+      register: igw
+      when: ec2_igw_name is defined and ec2_igw_id is defined
+
+    - name: "Saves the Internet Gateway ID {{ igw.gateway_id }} at networks/{{ ec2_subnet }}.yml"
+      lineinfile:
+        path: networks/{{ ec2_subnet}}.yml
+        regexp: '^ec2_igw_id: .*$'
+        line: "ec2_igw_id: {{ igw.gateway_id }}"
+      when: ec2_igw_name is defined and ec2_igw_id is defined
+
+    - name: Creates a default GW to the Internet if the gateway is in a public subnet
+      ec2_vpc_route_table:
+        vpc_id: "{{ ec2_vpc_id }}"
+        region: "{{ ec2_region }}"
+        subnets:
+          - "{{ subnet.subnet.id }}"
+        routes:
+          - dest: 0.0.0.0/0
+            gateway_id: "{{ igw.gateway_id  }}"
+        tags:
+          Name: Default Internet GW
+      when: ec2_map_public == "yes"
+ 

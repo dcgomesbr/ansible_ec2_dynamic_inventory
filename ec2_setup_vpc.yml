@@ -1,0 +1,30 @@
+---
+### creates a vpc in AWS
+### example:
+### ansible-playbook ec2_setup_vpc.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC"
+### the ec2_network is also a file suffix that points to a yml file within networks/ directory
+
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  user: root
+  pre_tasks:
+    - name: Reads network variables
+      include_vars:
+        dir: networks/
+        files_matching: "{{ ec2_network }}.yml"
+
+  tasks:
+    - name: "create VPC {{ ec2_vpc_name }}"
+      ec2_vpc_net:
+        name: "{{ ec2_vpc_name }}"
+        cidr_block: "{{ ec2_vpc_cidr }}"
+        region: "{{ ec2_region }}"
+        state: present
+      register: vpc
+
+    - name: "Saves the VPC ID {{ vpc.vpc.id }} at networks/{{ ec2_network }}.yml"
+      lineinfile:
+        path: "networks/{{ ec2_network }}.yml"
+        regexp: '^ec2_vpc_id: .*$'
+        line: "ec2_vpc_id: {{ vpc.vpc.id }}"
