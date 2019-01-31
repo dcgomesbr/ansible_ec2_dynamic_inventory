@@ -1,4 +1,4 @@
 ec2_subnet_name: "WikimediaPrivateSubnet"
 ec2_map_public: "no"
-ec2_subnet_cidr: 172.17.1.0/24
-ec2_subnet_id: subnet-0752c4594e846dfa4
+ec2_subnet_cidr: 172.16.1.0/24
+ec2_subnet_id: subnet-0eda0d613741b6a7b

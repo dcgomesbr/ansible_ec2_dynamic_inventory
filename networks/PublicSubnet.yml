@@ -1,6 +1,6 @@
 ec2_subnet_name: "WikimediaPublicSubnet"
 ec2_map_public: "yes"
-ec2_subnet_cidr: 172.17.0.0/24
-ec2_subnet_id: subnet-0797e83489761369f
+ec2_subnet_cidr: 172.16.0.0/24
+ec2_subnet_id: subnet-01a2981081294ab0f
 ec2_igw_name: "Standard Internet Gateway"
-ec2_igw_id: igw-051dc575c99908b42
+ec2_igw_id: igw-097d166ae851fa9c8
