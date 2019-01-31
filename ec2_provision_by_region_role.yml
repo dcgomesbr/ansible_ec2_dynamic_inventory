@@ -1,7 +1,9 @@
 ---
 ### provision AWS EC2 instance into a specified region and role configured in an instance type
 ### example:
-### ansible-playbook ec2_provision_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox"
+### ansible-playbook ec2_provision_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox ec2_subnet=AdminSecurityGroup"
+### the secuity group is optional, but might be a good idea or it can be instantiated in the default, making it hard to deal with later
+### ansible-playbook ec2_provision_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox ec2_subnet=AdminSecurityGroup ec2_sg=AdminSecurityGroup"
 ### the ec2_role is also a file suffix that points to a yml file within roles directory
 
 - hosts: localhost
@@ -13,6 +15,15 @@
       include_vars:
         dir: roles/
         files_matching: "{{ ec2_role }}.yml"
+    - name: Reads Subnet variables
+      include_vars:
+        dir: networks/
+        files_matching: "{{ ec2_subnet }}.yml"
+    - name: Reads Security Group variables conditionally, needs ec2_sg parameter
+      include_vars:
+        dir: networks/
+        files_matching: "{{ ec2_sg }}.yml"
+      when: ec2_sg is defined
   tasks:
     - name: Provision {{ ec2_count }} instances with role tag {{ ec2_role }}
       local_action:
@@ -21,13 +32,13 @@
         # If specified a Scurity Group will be added, or else, omitted
         # It sucks because once you create a Classic EC2 (non-VPC), Ansible will have a hard time
         # to add VPC Security Groups - groan - unless you fiddle with ec2_eni module
-        group_id: "{{ ec2_security_group_id | default(omit) }}"
+        group_id: "{{ sg_group_id | default(omit) }}"
         instance_type: "{{ ec2_instance_type }}"
         image: "{{ ec2_image }}"
         vpc_subnet_id: "{{ ec2_subnet_id }}"
         region: "{{ ec2_region }}"
         instance_tags: '{"Type":"{{ec2_instance_type}}", "Role":"{{ec2_role}}"}'
-        assign_public_ip: yes
+        assign_public_ip: "{{ ec2_map_public  }}"
         wait: true
         exact_count: "{{ ec2_count }}"
         count_tag:
@@ -48,6 +59,6 @@
         ec2_ip_address: "{{ item.public_ip }}"
       with_items: "{{ ec2.instances }}"
 
-    - name: Wait for the instances to boot by checking the ssh port. This can take a while... and sometimes the test fails
+    - name: Wait for the instances to boot by checking the ssh port. This can take a while... and sometimes the test fails if security group is not configured, etc...
       wait_for: host={{item.public_ip}} port=22 delay=60 timeout=300 state=started
       with_items: "{{ ec2.instances }}"
