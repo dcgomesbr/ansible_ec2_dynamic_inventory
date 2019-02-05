@@ -1,8 +1,10 @@
 ---
 ### Creates/Updates a NAT Gateway for private subnets - useful when you have hosts in a private subnet and you want them to access
 ### the Internet to do package upgrades and etc but not expose the machine
+### Itś important to notice that the NAT gateway is created in the PUBLIC network, while the routing table goes in the PRIVATE network
+### Also, both subnets must be able to talk, meaning they must be in the same VPC with the proper Security Group settings and etc... yeah...
 ### example:
-### ansible-playbook ec2_create_nat_gateway.yml -e "ec2_region=us-east-1 ec2_subnet=PrivateSubnet"
+### ansible-playbook ec2_create_nat_gateway.yml -e "ec2_region=us-east-1 ec2_vpc=WordpressVPC ec2_private_subnet=PrivateSubnet ec2_public_subnet=PublicSubnet"
 
 - hosts: localhost
   connection: local
@@ -12,7 +14,11 @@
     - name: Reads Subnet variables
       include_vars:
         dir: networks/
-        files_matching: "{{ ec2_subnet }}.yml"
+        files_matching: "{{ ec2_public_subnet }}.yml"
+    - name: Reads VPC variables
+      include_vars:
+        dir: networks/
+        files_matching: "{{ ec2_vpc }}.yml"
   tasks:
     - name: Create new nat gateway and allocate new EIP if a nat gateway does not yet exist in the subnet
       ec2_vpc_nat_gateway:
@@ -26,4 +32,33 @@
     - name: writes NAT GW information in networks, just in case
       copy:
         content: '"{{ new_nat_gateway | to_nice_yaml}}"'
-        dest: "networks/{{ ec2_subnet }}_{{ new_nat_gateway.nat_gateway_id }}"
+        dest: "networks/{{ ec2_public_subnet }}_{{ new_nat_gateway.nat_gateway_id }}"
+
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  user: root
+  pre_tasks:
+    - name: Reads Subnet variables
+      include_vars:
+        dir: networks/
+        files_matching: "{{ ec2_private_subnet }}.yml"
+    - name: Reads VPC variables
+      include_vars:
+        dir: networks/
+        files_matching: "{{ ec2_vpc }}.yml"
+
+    - name: Set up NAT-protected route table
+      ec2_vpc_route_table:
+        vpc_id: "{{ ec2_vpc_id }}"
+        region: "{{ ec2_region }}"
+        tags:
+          Name: Internal
+        subnets:
+          - "{{ ec2_subnet_id }}"
+          - '{{ ec2_subnet_name }}'
+          - '{{ ec2_subnet_cidr }}'
+        routes:
+          - dest: 0.0.0.0/0
+            gateway_id: "{{ new_nat_gateway.nat_gateway_id }}"
+      register: nat_route_table
