@@ -1,0 +1,38 @@
+---
+### Switch the Security Group for a bunch of instances of the same role, within a region
+#### This is useful when you want to place them in a Security Group with SSH, to make updates, for example
+### example:
+### ansible-playbook ec2_change_security_group_by_role.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox oldSG=AdminSecurityGroup newSG=WPServerSecurityGroup"
+
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  user: root
+  tasks:
+    - name: Setup SG group names
+      set_fact:
+        sg_restricted_ip: "0.0.0.0/0"
+        oldsg: "{{ lookup('file','networks/{{ oldSG }}.yml') | from_yaml }}"
+        newsg: "{{ lookup('file','networks/{{ newSG }}.yml') | from_yaml }}"
+
+    - name: Security Group IDs
+      debug:
+        msg: " Old SG:{{ oldsg.sg_group_id }} New SG: {{ newsg.sg_group_id }}"
+
+    - name: Get EC2 instance IDs
+      run_once: true
+      ec2_instance_facts:
+        region: "{{ ec2_region }}"
+        filters:
+          "tag:Role": "{{ec2_role}}"
+      register: instances
+
+    - name: "Fetch instances IP adresses in the region {{ ec2_region }}"
+      debug:
+        msg: "aws ec2 modify-instance-attribute --instance-id {{ item }} --groups {{ oldsg.sg_group_id }} {{ newsg.sg_group_id }}"
+      with_items: "{{instances|json_query('instances[*].instance_id')}}"
+
+
+    - name: "Fetch instances IP adresses in the region {{ ec2_region }}"
+      shell: aws ec2 modify-instance-attribute --instance-id {{ item }} --groups {{ oldsg.sg_group_id }} {{ newsg.sg_group_id }}
+      with_items: "{{instances|json_query('instances[*].instance_id')}}"

@@ -1,7 +1,7 @@
 ---
 ### Updates the Admin security group with access to specific NAT'ed IP of the admin's machine
 ### example:
-### ansible-playbook ec2_update_admin_ipaddr.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox"
+### ansible-playbook ec2_update_admin_ipaddr.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox ec2_sg=AdminSecurityGroup"
 
 - hosts: localhost
   connection: local
@@ -12,6 +12,11 @@
       include_vars:
         dir: roles/
         files_matching: "{{ ec2_role }}.yml"
+    - name: Reads Security Group variables
+      include_vars:
+        dir: networks/
+        files_matching: "{{ ec2_sg }}.yml"
+
   tasks:
     - name: get this machine's public IP
       ipify_facts:

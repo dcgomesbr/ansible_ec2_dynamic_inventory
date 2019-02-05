@@ -1,0 +1,29 @@
+---
+### Creates/Updates a NAT Gateway for private subnets - useful when you have hosts in a private subnet and you want them to access
+### the Internet to do package upgrades and etc but not expose the machine
+### example:
+### ansible-playbook ec2_create_nat_gateway.yml -e "ec2_region=us-east-1 ec2_subnet=PrivateSubnet"
+
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  user: root
+  pre_tasks:
+    - name: Reads Subnet variables
+      include_vars:
+        dir: networks/
+        files_matching: "{{ ec2_subnet }}.yml"
+  tasks:
+    - name: Create new nat gateway and allocate new EIP if a nat gateway does not yet exist in the subnet
+      ec2_vpc_nat_gateway:
+        state: present
+        subnet_id: "{{ ec2_subnet_id }}"
+        wait: yes
+        region: "{{ ec2_region }}"
+        if_exist_do_not_create: true
+      register: new_nat_gateway
+
+    - name: writes NAT GW information in networks, just in case
+      copy:
+        content: '"{{ new_nat_gateway | to_nice_yaml}}"'
+        dest: "networks/{{ ec2_subnet }}_{{ new_nat_gateway.nat_gateway_id }}"
