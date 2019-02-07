@@ -45,7 +45,7 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
 
 ## How to use
 ### VPC, Subnets, NAT Gateways, Security Groups
-* Create the VPC for your app's EC2 instances
+* Setup the VPC for your app's EC2 instances
 
   Let's say you want to do a Wordpress installation isolated in a private network, served by a ELB or CDN
 
@@ -54,6 +54,8 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
   If ec2_vpc_id variable might be overwritten, but it must exist in the file
   You can set it up as none if you wish.
   ec2_vpc_id: none
+  
+  `ansible-playbook ec2_setup_vpc.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC"`
 
 * Create the subnets. Let's create the Public subnet that will have a jump box (bastion)
 
