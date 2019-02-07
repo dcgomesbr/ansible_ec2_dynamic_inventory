@@ -91,6 +91,11 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
 
   The ec2_sg is optional, but since I want to demonstrate the SSH functionality, I'll put this instance in a security group that enables SSH access from my IP. Remember to setup they keypair PEM in AWS EC2.
 
+* Updates the IP address of the bastion in the WPServer role configuration
+ 
+  `ansible-playbook ec2_update_bastion.yml -e "ec2_region=us-east-1 ec2_role=WPServer ec2_bastion_role=AdminJumpbox"`
+
+
 * Instantiate the WPServer, a.k.a. the web server
 
   `ansible-playbook ec2_provision_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer ec2_subnet=PrivateSubnet ec2_sg=WPServerSecurityGroup"`
