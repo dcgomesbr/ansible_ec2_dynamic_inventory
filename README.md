@@ -114,7 +114,7 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
   
     `ansible-playbook ec2_yum_install_packages_by_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"`
 
-### Checks and cleanng up
+### Checks and clean up
 
 * List all instances
 
@@ -136,9 +136,8 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
   
   `ansible-playbook ec2_term_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"`
 
-**TERMINATE THE NAT GATEWAY ON YOUR OWN AND RELEASE THE EIP!!**
-
-I'll script that sometime later...
+* Delete the NAT Gateway and release the EIP
+ `ansible-playbook ec2_delete_nat_gateway.yml -e "ec2_region=us-east-1 ec2_subnet=PublicSubnet"`
 
 ## TODO:
   - [x] Basic Instantiation scripts
@@ -146,6 +145,6 @@ I'll script that sometime later...
   - [x] VPC, subnet and NAT Gateway scripts
   - [x] Yum package scripts
   - [ ] ELB instantiation and configuration
-  - [ ] A script to remove NAT Gateways and free EIP
+  - [x] A script to remove NAT Gateways and free EIP
   - [ ] Wordpress installation script
   - [ ] RDS instantiation and configuration
