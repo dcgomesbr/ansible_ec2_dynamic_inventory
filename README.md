@@ -57,7 +57,7 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
 
 * Create the subnets. Let's create the Public subnet that will have a jump box (bastion)
 
-  ansible-playbook ec2_setup_subnet.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PublicSubnet"
+  `ansible-playbook ec2_setup_subnet.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PublicSubnet"`
 
   Notice that it uses the network/PublicSubnet.yml, same deal as before. Vars will be replaced with most current content,
   but they must exist prior to calling the script
@@ -71,13 +71,13 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
 
   There is a script you can use later to update your IP across all your machines by role, for example: ec2_update_admin_ipaddr.yml
 
-  ansible-playbook ec2_create_sg.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PublicSubnet ec2_sg=AdminSecurityGroup"
+  `ansible-playbook ec2_create_sg.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PublicSubnet ec2_sg=AdminSecurityGroup"`
 
 * Create a NAT gateway
 
   This is useful for your instances behind a private network to have Internet access shielded by a NAT gateway so they can package installs and updates
 
- ansible-playbook ec2_create_nat_gateway.yml -e "ec2_region=us-east-1 ec2_vpc=WordpressVPC ec2_private_subnet=PrivateSubnet ec2_public_subnet=PublicSubnet"
+ `ansible-playbook ec2_create_nat_gateway.yml -e "ec2_region=us-east-1 ec2_vpc=WordpressVPC ec2_private_subnet=PrivateSubnet ec2_public_subnet=PublicSubnet"`
 
  The NAT gateway is created in the public subnet and allocates an Elastic IP (EIP) for it. Then, in the private subnet, you create a default route for it to addresses outside your subnets. The Security Groups must allow this, keep that in mind...
 
@@ -85,13 +85,13 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
 
 * Instantiate the Admin Jumpbox, a.k.a. bastion
 
-  ansible-playbook ec2_provision_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox ec2_subnet=PublicSubnet ec2_sg=AdminSecurityGroup"
+  `ansible-playbook ec2_provision_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox ec2_subnet=PublicSubnet ec2_sg=AdminSecurityGroup"`
 
   The ec2_sg is optional, but since I want to demonstrate the SSH functionality, I'll put this instance in a security group that enables SSH access from my IP. Remember to setup they keypair PEM in AWS EC2.
 
 * Instantiate the WPServer, a.k.a. the web server
 
-  ansible-playbook ec2_provision_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer ec2_subnet=PrivateSubnet ec2_sg=WPServerSecurityGroup"
+  `ansible-playbook ec2_provision_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer ec2_subnet=PrivateSubnet ec2_sg=WPServerSecurityGroup"`
   
 * Perform a yum update on all instances of that same role
 
@@ -99,29 +99,46 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
 
     * Updates:
   
-    ansible-playbook ec2_yum_update_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox"
+    `ansible-playbook ec2_yum_update_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox"`
   
-    ansible-playbook ec2_yum_update_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"
+    `ansible-playbook ec2_yum_update_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"`
 
     * Instalations:
   
-    ansible-playbook ec2_yum_install_packages_by_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"
+    `ansible-playbook ec2_yum_install_packages_by_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"`
 
+### Checks and cleanng up
 
-* List all my instances' metadata
+* List all instances
 
-  ansible-playbook ec2_list_metadata.yml 
+  `ansible-playbook ec2_list_metadata.yml`
+  
+  `ec2_list_all.yml`
+  
+ * Ping all instances by role
+ 
+ `ansible-playbook ec2_ping_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox"`
+ 
+ `ansible-playbook ec2_ping_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"`
 
 * Terminate all instances by role
 
   Let's terminate this instance so we don't risk paying AWS money overnight
 
-  ansible-playbook ec2_term_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox"
+  `ansible-playbook ec2_term_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox"`
+  
+  `ansible-playbook ec2_term_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"`
 
+**TERMINATE THE NAT GATEWAY ON YOUR OWN AND RELEASE THE EIP!!**
 
-##TODO:
+I'll script that sometime later...
 
-  * ELB instantiation and configuration
-  * A script to remove NAT Gateways and free EIP
-  * Wordpress installation script
-  * RDS instantiation and configuration
+## TODO:
+  - [x] Basic Instantiation scripts
+  - [x] EC2 roles for a bastion and webserver
+  - [x] VPC, subnet and NAT Gateway scripts
+  - [x] Yum package scripts
+  - [ ] ELB instantiation and configuration
+  - [ ] A script to remove NAT Gateways and free EIP
+  - [ ] Wordpress installation script
+  - [ ] RDS instantiation and configuration
