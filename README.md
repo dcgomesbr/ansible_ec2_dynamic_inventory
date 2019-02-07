@@ -1,58 +1,66 @@
 # ansible_ec2_dynamic_inventory
 Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
 
-Pre-requisites:
-* AWS Stuff
-  - AWS account capable of creating EC2 free tier eligible instances, RDS and CloudFront
-  - AWS CLI installed and configured with a working aws_access_key_id and aws_secret_access_key
+## Pre-requisites:
+### AWS Business as Usual
+  * AWS account capable of creating EC2 free tier eligible instances, RDS and CloudFront
+  * AWS CLI installed and configured with a working aws_access_key_id and aws_secret_access_key
+  
   I'm NOT using ansible-vault here, keys will come from ~/.aws/credentials
 
-* Python stuff
-  - Python and modules
-    Ansible
-    Boto
+### Python modules
+  * Ansible
+  * Boto
+  * Boto3
      
     In inventory/base file, I setup ansible_python_interpreter parameter poiting to where my
     python binary is. This can be necessary if you have multiple Python instalations conflicting
     your OS (MacOS wasn't nice about it).
 
-* SSH stuff
-  - OpenSSH
-    ssh-agent configured with the AWS key pair for passworless authentication
-    (I call it keypair.pem) and it is configured in ansible.cfg at private_key_file
-    Generate the keipair in the AWS Web Console normally and download the pem file.
+### SSH stuff
+  * OpenSSH / ssh-agent
+  
+    ssh-agent configured with the AWS key pair for passworless authentication, addding it with ssh-add;
+  
+  * AWS PEM file
+  
+    PEM file downloaded from AWS and configured in ansible.cfg at private_key_file parameter.
+    Generate the keipair in the AWS Web Console normally and download the pem file, placing it in keys directory
 
-* ec2.py scripts
-  - Although it's in my repo's inventory directory, you can download the latest from:
+### ec2.py scripts
+  * Although it's in my repo's inventory directory, you can download the latest from:
 
   https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.ini
+  
   https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.py
   
   They must go inside inventory directory, because in ansible.cfg it points inventory = inventory/
   
-All the stuff above and how to make it work is broadly covered so just Google for it.
+  All the stuff above and how to make it work is broadly covered so just Google for it.
 
-Purpose:
+## Purpose:
 
   Experiment with provisioning and maintaining EC2 fleets and services using solely Ansible and Boto, making use of dynamic machine inventories instead of a static hosts file.
 
 
-How to use:
-* Create the VPC for your app - let's say you want to do a Wordpress installation
+## How to use
+### VPC, Subnets, NAT Gateways, Security Groups
+* Create the VPC for your app's EC2 instances
 
-  ansible-playbook ec2_setup_vpc.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC"
+  Let's say you want to do a Wordpress installation isolated in a private network, served by a ELB or CDN
 
-  Notice that it makes uses of networks/WordpressVPC.yml config file for the vars
+  Notice that it makes use of networks/WordpressVPC.yml config file for the VPC vars
 
   If ec2_vpc_id variable might be overwritten, but it must exist in the file
-  You can set it up as undefined if you wish.
-  ec2_vpc_id: undefined
+  You can set it up as none if you wish.
+  ec2_vpc_id: none
 
-* Create the subnets. Let's create the Public subnet that will have a jump box
+* Create the subnets. Let's create the Public subnet that will have a jump box (bastion)
 
   ansible-playbook ec2_setup_subnet.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PublicSubnet"
 
-  Notice that it uses the network/PublicSubnet.yml, same deal as before. Vars will be replaced with most current content, but must exist prior to calling the script
+  Notice that it uses the network/PublicSubnet.yml, same deal as before. Vars will be replaced with most current content,
+  but they must exist prior to calling the script
 
   This script also creates Internet Gateways and Routes if specified to be a public subnet
 
@@ -65,17 +73,40 @@ How to use:
 
   ansible-playbook ec2_create_sg.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PublicSubnet ec2_sg=AdminSecurityGroup"
 
-* Instantiate the EC2
+* Create a NAT gateway
 
-  ansible-playbook ec2_provision_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox ec2_sg=AdminSecurityGroup ec2_subnet=PublicSubnet"
+  This is useful for your instances behind a private network to have Internet access shielded by a NAT gateway so they can package installs and updates
 
-  The ec2_sg is optional, but since I want to demonstrate the SSH functionality, I'll put this instance in a security group that enables SSH access from my IP. Remember to setup they keypair.pem for your AWS account.
+ ansible-playbook ec2_create_nat_gateway.yml -e "ec2_region=us-east-1 ec2_vpc=WordpressVPC ec2_private_subnet=PrivateSubnet ec2_public_subnet=PublicSubnet"
 
+ The NAT gateway is created in the public subnet and allocates an Elastic IP (EIP) for it. Then, in the private subnet, you create a default route for it to addresses outside your subnets. The Security Groups must allow this, keep that in mind...
+
+### Instantiate the EC2
+
+* Instantiate the Admin Jumpbox, a.k.a. bastion
+
+  ansible-playbook ec2_provision_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox ec2_subnet=PublicSubnet ec2_sg=AdminSecurityGroup"
+
+  The ec2_sg is optional, but since I want to demonstrate the SSH functionality, I'll put this instance in a security group that enables SSH access from my IP. Remember to setup they keypair PEM in AWS EC2.
+
+* Instantiate the WPServer, a.k.a. the web server
+
+  ansible-playbook ec2_provision_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer ec2_subnet=PrivateSubnet ec2_sg=WPServerSecurityGroup"
+  
 * Perform a yum update on all instances of that same role
 
-  Now we can update all Linux software in these instances at once by role
+  Now we can install and update all Linux software in these instances at once by role
 
-  ansible-playbook ec2_yum_update_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox"
+    * Updates:
+  
+    ansible-playbook ec2_yum_update_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox"
+  
+    ansible-playbook ec2_yum_update_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"
+
+    * Instalations:
+  
+    ansible-playbook ec2_yum_install_packages_by_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"
+
 
 * List all my instances' metadata
 
@@ -88,10 +119,9 @@ How to use:
   ansible-playbook ec2_term_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox"
 
 
-TODO:
+##TODO:
 
-  A script to remove VPCs
-  A role for a web server
-  A security group for a web server 
-  Wordpress installation script
-  Database instantiation
+  * ELB instantiation and configuration
+  * A script to remove NAT Gateways and free EIP
+  * Wordpress installation script
+  * RDS instantiation and configuration
