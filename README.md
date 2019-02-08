@@ -65,16 +65,20 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
   but they must exist prior to calling the script
 
   This script also creates Internet Gateways and Routes if specified to be a public subnet
+  
+  Now, create the private subnet:
+  
+  `ansible-playbook ec2_setup_subnet.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PrivateSubnet"`
 
 * Create the Security Group so you don't instantiate the EC2 into a default one
 
   This security group will allow us to SSH into it, run a yum update and etc...
   It will be restricted to my machine's IP only, which is collected real time during the SG creation.
 
-  There is a script you can use later to update your IP across all your machines by role, for example: ec2_update_admin_ipaddr.yml
-
-  `ansible-playbook ec2_create_sg.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PublicSubnet ec2_sg=AdminSecurityGroup"`
-
+  There is a script you can use later to update your IP across all your machines by role, but you need instances up in AdminJumpbox role: ec2_update_admin_ipaddr.yml
+  
+  `ansible-playbook ec2_update_admin_ipaddr.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox ec2_sg=AdminSecurityGroup"`
+ 
 * Create a NAT gateway
 
   This is useful for your instances behind a private network to have Internet access shielded by a NAT gateway so they can package installs and updates
