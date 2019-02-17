@@ -14,18 +14,18 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
   * Boto3
 
     In inventory/base file, I setup ansible_python_interpreter parameter poiting to where my
-    python binary is. This can be necessary if you have multiple Python instalations conflicting
+    python binary is. This can be necessary if you have multiple Python installations conflicting
     your OS (MacOS wasn't nice about it).
 
 ### SSH stuff
   * OpenSSH / ssh-agent
 
-    ssh-agent configured with the AWS key pair for passworless authentication, addding it with ssh-add;
+    ssh-agent configured with the AWS key pair for passworless authentication, adding it with ssh-add;
 
   * AWS PEM file
 
     PEM file downloaded from AWS and configured in ansible.cfg at private_key_file parameter.
-    Generate the keipair in the AWS Web Console normally and download the pem file, placing it in keys directory
+    Generate the keypair in the AWS Web Console normally and download the PEM file, placing it in keys directory
 
 ### ec2.py scripts
   * Although it's in my repo's inventory directory, you can download the latest from:
@@ -65,10 +65,6 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
 
   This script also creates Internet Gateways and Routes if specified to be a public subnet
 
-  Now, create the private subnet:
-
-  `ansible-playbook ec2_setup_subnet.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PrivateSubnet"`
-
   More subnets, for the WordPress hosts, RDS and App Load Balancer
 
   `ansible-playbook vpc_setup_subnet.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PrivateSubnetDB01"`
@@ -88,7 +84,7 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
   `ansible-playbook vpc_create_security_group.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_sg=AdminSecurityGroup"`
 
  A SG for the WP servers so they can be accessed through the Bastion via SSH and open 80 and 443 to the Load Balancers.
-  `ansible-playbook vpc_create_security_group.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PublicSubnetBastion ec2_sg=AdminSecurityGroup"`
+  `ansible-playbook vpc_create_security_group.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_sg=WPServerSecurityGroup"`
 
 * Create a NAT gateway
 
@@ -105,18 +101,20 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
 
 * Instantiate the Admin Jumpbox, a.k.a. bastion
 
-  `ansible-playbook ec2_provision_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox ec2_subnet=PublicSubnet ec2_sg=AdminSecurityGroup"`
+  `ansible-playbook ec2_provision_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox ec2_sg=AdminSecurityGroup"`
 
   The ec2_sg is optional, but since I want to demonstrate the SSH functionality, I'll put this instance in a security group that enables SSH access from my IP. Remember to setup they keypair PEM in AWS EC2.
 
 * Updates the IP address of the bastion in the WPServer role configuration
 
-  `ansible-playbook ec2_update_bastion.yml -e "ec2_region=us-east-1 ec2_role=WPServer ec2_bastion_role=AdminJumpbox"`
+  `ansible-playbook ec2_update_bastion_address.yml -e "ec2_region=us-east-1 ec2_role=WPServer ec2_bastion_role=AdminJumpbox"`
 
 
 * Instantiate the WPServer, a.k.a. the web server
 
-  `ansible-playbook ec2_provision_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer ec2_subnet=PrivateSubnet ec2_sg=WPServerSecurityGroup"`
+  `ansible-playbook ec2_provision_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer ec2_sg=WPServerSecurityGroup"`
+
+  Since we have two subnets for this role, it will place one instance in each
 
 * Perform a yum update on all instances of that same role
 
@@ -128,7 +126,7 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
 
     `ansible-playbook ec2_yum_update_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"`
 
-    * Instalations:
+    * Installation:
 
     `ansible-playbook ec2_yum_install_packages_by_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"`
 
