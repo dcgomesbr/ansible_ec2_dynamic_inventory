@@ -1,7 +1,7 @@
 ---
 ### Deletes NAT gateway in a given subnet - useful to remove the NAT when you no longer need it
 ### example:
-### ansible-playbook ec2_delete_nat_gateway.yml -e "ec2_region=us-east-1 ec2_subnet=PublicSubnet"
+### ansible-playbook vpc_delete_nat_gateway.yml -e "ec2_region=us-east-1 ec2_subnet=PublicSubnet"
 
 - hosts: localhost
   connection: local

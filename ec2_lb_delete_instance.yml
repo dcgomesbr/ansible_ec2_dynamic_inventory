@@ -1,0 +1,22 @@
+---
+### Deletes an Application Load Balancer
+### ansible-playbook ec2_lb_delete_instance.yml -e "ec2_region=us-east-1 lb_instance_name=wordpresslb tg_name=wpserver"
+
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Deletes App LB instance "{{ lb_instance_name }}"
+      elb_application_lb:
+        region: "{{ ec2_region }}"
+        name: "{{ lb_instance_name }}"
+        state: absent
+        wait: yes
+        wait_timeout: 600
+      register: deleted_lb
+
+    - name: Remove the target group
+      elb_target_group:
+        name: "{{ tg_name }}"
+        state: absent
+      register: deleted_tg

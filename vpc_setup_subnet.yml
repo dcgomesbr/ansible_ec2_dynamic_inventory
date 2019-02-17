@@ -1,7 +1,7 @@
 ---
 ### creates a subnet inside an already existent VPC in AWS
 ### example:
-### ansible-playbook ec2_setup_subnet.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PrivateSubnet"
+### ansible-playbook vpc_setup_subnet.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PublicSubnetBastion"
 ### the ec2_network is also a file suffix that points to a yml file within networks/ directory
 
 - hosts: localhost
@@ -25,10 +25,12 @@
         state: present
         vpc_id: "{{ ec2_vpc_id }}"
         region: "{{ ec2_region }}"
+        az: "{{ ec2_subnet_az | default(omit) }}"
         cidr: "{{ ec2_subnet_cidr }}"
         map_public: "{{ ec2_map_public }}"
         resource_tags:
           Name: "{{ ec2_subnet_name }}"
+          Role: "{{ ec2_subnet_role }}"
       register: subnet
 
     - name: "Saves the subnet ID {{ subnet.subnet.id }} at networks/{{ ec2_subnet }}.yml"
@@ -49,7 +51,7 @@
 
     - name: "Saves the Internet Gateway ID {{ igw.gateway_id }} at networks/{{ ec2_subnet }}.yml"
       lineinfile:
-        path: networks/{{ ec2_subnet}}.yml
+        path: "networks/{{ ec2_subnet }}.yml"
         regexp: '^ec2_igw_id: .*$'
         line: "ec2_igw_id: {{ igw.gateway_id }}"
       when: ec2_igw_name is defined and ec2_igw_id is defined
@@ -64,6 +66,6 @@
           - dest: 0.0.0.0/0
             gateway_id: "{{ igw.gateway_id  }}"
         tags:
-          Name: Default Internet GW
+          Name: "{{ ec2_subnet_name }} Default Internet GW"
       when: ec2_map_public == "yes"
  

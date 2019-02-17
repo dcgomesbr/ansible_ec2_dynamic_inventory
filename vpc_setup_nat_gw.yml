@@ -4,7 +4,7 @@
 ### Itś important to notice that the NAT gateway is created in the PUBLIC network, while the routing table goes in the PRIVATE network
 ### Also, both subnets must be able to talk, meaning they must be in the same VPC with the proper Security Group settings and etc... yeah...
 ### example:
-### ansible-playbook ec2_create_nat_gateway.yml -e "ec2_region=us-east-1 ec2_vpc=WordpressVPC ec2_private_subnet=PrivateSubnet ec2_public_subnet=PublicSubnet"
+### ansible-playbook vpc_setup_nat_gw.yml -e "ec2_region=us-east-1 ec2_vpc=WordpressVPC ec2_private_subnet=PrivateSubnetWP01 ec2_public_subnet=PublicSubnetBastion"
 
 - hosts: localhost
   connection: local
@@ -29,11 +29,13 @@
         if_exist_do_not_create: true
       register: new_nat_gateway
 
-    - name: writes NAT GW information in networks, just in case
-      copy:
-        content: '"{{ new_nat_gateway | to_nice_yaml}}"'
-        dest: "networks/{{ ec2_public_subnet }}_{{ new_nat_gateway.nat_gateway_id }}"
+# I put this here for fun to test to_nice_yaml - not needed, actually, since we're going for dynamic inventory end-to-end
+#    - name: writes NAT GW information in networks, just in case
+#      copy:
+#        content: '"{{ new_nat_gateway | to_nice_yaml}}"'
+#        dest: "networks/{{ ec2_public_subnet }}_{{ new_nat_gateway.nat_gateway_id }}"
 
+# Setup a route table for the NAT gateway in the desired private subnet
 - hosts: localhost
   connection: local
   gather_facts: false
@@ -48,12 +50,12 @@
         dir: networks/
         files_matching: "{{ ec2_vpc }}.yml"
 
-    - name: Set up NAT-protected route table
+    - name: Set up NAT-protected outgoing route table
       ec2_vpc_route_table:
         vpc_id: "{{ ec2_vpc_id }}"
         region: "{{ ec2_region }}"
         tags:
-          Name: Internal
+          Name: "{{ ec2_subnet_name }} NAT Internet GW"
         subnets:
           - "{{ ec2_subnet_id }}"
           - '{{ ec2_subnet_name }}'

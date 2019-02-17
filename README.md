@@ -55,16 +55,24 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
   You can set it up as none if you wish.
   ec2_vpc_id: none
   
-  `ansible-playbook ec2_setup_vpc.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC"`
+  `ansible-playbook vpc_setup_vpc.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC"`
 
 * Create the subnets. Let's create the Public subnet that will have a jump box (bastion)
 
-  `ansible-playbook ec2_setup_subnet.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PublicSubnet"`
+  `ansible-playbook vpc_setup_subnet.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PublicSubnetBastion"`
 
-  Notice that it uses the network/PublicSubnet.yml, same deal as before. Vars will be replaced with most current content,
-  but they must exist prior to calling the script
+  Notice that it uses the network/PublicSubnetBastion.yml, same deal as before. Vars will be replaced with most current content, but they must exist prior to calling the script
 
   This script also creates Internet Gateways and Routes if specified to be a public subnet
+
+  More subnets, for the WordPress hosts, RDS and App Load Balancer
+
+  `ansible-playbook vpc_setup_subnet.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PrivateSubnetDB01"`
+  `ansible-playbook vpc_setup_subnet.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PrivateSubnetDB02"`
+  `ansible-playbook vpc_setup_subnet.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PrivateSubnetWP01"`
+  `ansible-playbook vpc_setup_subnet.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PrivateSubnetWP02"`
+  `ansible-playbook vpc_setup_subnet.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PublicSubnetLB01"`
+  `ansible-playbook vpc_setup_subnet.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PublicSubnetLB02"`
 
 * Create the Security Group so you don't instantiate the EC2 into a default one
 
@@ -73,15 +81,21 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
 
   There is a script you can use later to update your IP across all your machines by role, for example: ec2_update_admin_ipaddr.yml
 
-  `ansible-playbook ec2_create_sg.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PublicSubnet ec2_sg=AdminSecurityGroup"`
+  `ansible-playbook vpc_create_security_group.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_sg=AdminSecurityGroup"`
+
+ A SG for the WP servers so they can be accessed through the Bastion via SSH and open 80 and 443 to the Load Balancers.
+  `ansible-playbook vpc_create_security_group.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PublicSubnetBastion ec2_sg=AdminSecurityGroup"`
 
 * Create a NAT gateway
 
-  This is useful for your instances behind a private network to have Internet access shielded by a NAT gateway so they can package installs and updates
+  This is useful for your instances behind a private network to have Internet access shielded by a NAT gateway so they can package installs and updates - this will create just one NAT Gateway and setup the outgoing routes for both WP Private Subnets
 
- `ansible-playbook ec2_create_nat_gateway.yml -e "ec2_region=us-east-1 ec2_vpc=WordpressVPC ec2_private_subnet=PrivateSubnet ec2_public_subnet=PublicSubnet"`
+ `ansible-playbook vpc_setup_nat_gw.yml -e "ec2_region=us-east-1 ec2_vpc=WordpressVPC ec2_private_subnet=PrivateSubnetWP01 ec2_public_subnet=PublicSubnetBastion"`
+ `ansible-playbook vpc_setup_nat_gw.yml -e "ec2_region=us-east-1 ec2_vpc=WordpressVPC ec2_private_subnet=PrivateSubnetWP02 ec2_public_subnet=PublicSubnetBastion"`
 
  The NAT gateway is created in the public subnet and allocates an Elastic IP (EIP) for it. Then, in the private subnet, you create a default route for it to addresses outside your subnets. The Security Groups must allow this, keep that in mind...
+
+ Keep in mind that this thing costs MONEY. Shut it down once you're done installing packages in your instances and release the Elastic IP.
 
 ### Instantiate the EC2
 

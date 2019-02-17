@@ -1,7 +1,7 @@
 ---
 ### Creates/Updates a security group with a set of rules specified in file at networks/
 ### example:
-### ansible-playbook ec2_create_sg.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_subnet=PublicSubnet ec2_sg=AdminSecurityGroup"
+### ansible-playbook vpc_create_security_group.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_sg=AdminSecurityGroup"
 
 - hosts: localhost
   connection: local
@@ -12,10 +12,6 @@
       include_vars:
         dir: networks/
         files_matching: "{{ ec2_network }}.yml"
-    - name: Reads Subnet variables
-      include_vars:
-        dir: networks/
-        files_matching: "{{ ec2_subnet }}.yml"
     - name: Reads Security Group variables
       include_vars:
         dir: networks/
@@ -28,7 +24,7 @@
 
     - name: "Saves the restricted IP to networks/{{ ec2_sg }}.yml"
       lineinfile:
-        path: networks/{{ ec2_sg}}.yml
+        path: "networks/{{ ec2_sg }}.yml"
         regexp: '^sg_restricted_ip: .*$'
         line: "sg_restricted_ip: {{ public_ip.ansible_facts.ipify_public_ip }}/32"
       when: sg_uses_restricted_ip

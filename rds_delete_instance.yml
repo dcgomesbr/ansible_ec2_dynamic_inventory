@@ -1,0 +1,16 @@
+---
+### Deletes a RDS instance
+### ansible-playbook rds_get_facts.yml -e "ec2_region=us-east-1 rds_instance_name=wordpressdb"
+
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Deletes RDS instance "{{ rds_instance_name }}"
+      rds:
+        region: "{{ ec2_region }}"
+        command: delete
+        instance_name: "{{ rds_instance_name }}"
+        wait: yes
+        wait_timeout: 600
+      register: deleted_rds

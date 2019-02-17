@@ -2,7 +2,7 @@
 ### Switch the Security Group for a bunch of instances of the same role, within a region
 #### This is useful when you want to place them in a Security Group with SSH, to make updates, for example
 ### example:
-### ansible-playbook ec2_change_security_group_by_role.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox oldSG=AdminSecurityGroup newSG=WPServerSecurityGroup"
+### ansible-playbook vpc_change_security_group_by_role.yml -e "ec2_region=us-east-1 ec2_role=AdminJumpbox oldSG=AdminSecurityGroup newSG=WPServerSecurityGroup"
 
 - hosts: localhost
   connection: local
