@@ -1,0 +1,10 @@
+sg_uses_restricted_ip: no
+sg_restricted_ip: 0.0.0.0/0
+sg_group_id: sg-09ebe48043db85d0d
+sg_name: "LoadBalancer"
+sg_description: "HTTP and HTTPS standard ports access"
+sg_rules:
+  - proto: tcp
+    from_port: 80
+    to_port: 80
+    cidr_ip: 0.0.0.0/0

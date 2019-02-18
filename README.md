@@ -86,6 +86,9 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
  A SG for the WP servers so they can be accessed through the Bastion via SSH and open 80 and 443 to the Load Balancers.
   `ansible-playbook vpc_create_security_group.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_sg=WPServerSecurityGroup"`
 
+ A SG for the Load Balancer too:
+  `ansible-playbook vpc_create_security_group.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_sg=LBSecurityGroup"`
+
 * Create a NAT gateway
 
   This is useful for your instances behind a private network to have Internet access shielded by a NAT gateway so they can package installs and updates - this will create just one NAT Gateway and setup the outgoing routes for both WP Private Subnets
@@ -153,7 +156,7 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
   `ansible-playbook ec2_term_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"`
 
 * Delete the NAT Gateway and release the EIP
- `ansible-playbook ec2_delete_nat_gateway.yml -e "ec2_region=us-east-1 ec2_subnet=PublicSubnet"`
+ `ansible-playbook ec2_delete_nat_gateway.yml -e "ec2_region=us-east-1 ec2_subnet=PublicSubnetBastion"`
 
 ## TODO:
   - [x] Basic Instantiation scripts
