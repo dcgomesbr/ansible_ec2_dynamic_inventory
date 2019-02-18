@@ -133,6 +133,10 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
 
     `ansible-playbook ec2_yum_install_packages_by_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"`
 
+* Create TargetGroup and App LoadBalancer for WPServer
+
+  `ansible-playbook ec2_lb_create_target_group_by_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer lb_security_group=LBSecurityGroup"`
+
 ### Checks and clean up
 
 * List all instances
@@ -156,14 +160,14 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
   `ansible-playbook ec2_term_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"`
 
 * Delete the NAT Gateway and release the EIP
- `ansible-playbook ec2_delete_nat_gateway.yml -e "ec2_region=us-east-1 ec2_subnet=PublicSubnetBastion"`
+ `ansible-playbook vpc_delete_nat_gateway.yml -e "ec2_region=us-east-1 ec2_subnet=PublicSubnetBastion"`
 
 ## TODO:
   - [x] Basic Instantiation scripts
   - [x] EC2 roles for a bastion and webserver
   - [x] VPC, subnet and NAT Gateway scripts
   - [x] Yum package scripts
-  - [ ] ELB instantiation and configuration
+  - [x] App Load Balancer instantiation and configuration
   - [x] A script to remove NAT Gateways and free EIP
   - [ ] Wordpress installation script
   - [ ] RDS instantiation and configuration
