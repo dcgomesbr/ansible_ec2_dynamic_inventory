@@ -1,0 +1,17 @@
+---
+### Deletes a RDS instance
+### ansible-playbook ec2_lb_delete_by_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"
+
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: "Deletes LB for  {{ ec2_role }}"
+      elb_application_lb:
+        name: "{{ ec2_role }}LoadBalancer"
+        state: absent
+
+    - name: "Deletes target group for  {{ ec2_role }}"
+      elb_target_group:
+        name: "{{ ec2_role }}TargetGroup"
+        state: absent
