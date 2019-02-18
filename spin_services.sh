@@ -12,6 +12,7 @@ ansible-playbook vpc_setup_subnet.yml -e "ec2_region=us-east-1 ec2_network=Wordp
 
 ansible-playbook vpc_create_security_group.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_sg=AdminSecurityGroup"
 ansible-playbook vpc_create_security_group.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_sg=WPServerSecurityGroup"
+ansible-playbook vpc_create_security_group.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_sg=LBSecurityGroup"
 
 ansible-playbook vpc_setup_nat_gw.yml -e "ec2_region=us-east-1 ec2_vpc=WordpressVPC ec2_private_subnet=PrivateSubnetWP01 ec2_public_subnet=PublicSubnetBastion"
 ansible-playbook vpc_setup_nat_gw.yml -e "ec2_region=us-east-1 ec2_vpc=WordpressVPC ec2_private_subnet=PrivateSubnetWP02 ec2_public_subnet=PublicSubnetBastion"
@@ -25,3 +26,9 @@ ansible-playbook ec2_yum_update_by_region_role.yml -e "ec2_region=us-east-1 ec2_
 ansible-playbook ec2_yum_update_by_region_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"
 
 ansible-playbook ec2_yum_install_packages_by_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"
+
+ansible-playbook ec2_install_wp_by_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"
+
+ansible-playbook ec2_lb_create_by_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer lb_security_group=LBSecurityGroup"
+
+echo Done

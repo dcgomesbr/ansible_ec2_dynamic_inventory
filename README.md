@@ -2,6 +2,11 @@
 Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
 
 ## Pre-requisites:
+
+This was built to work out-of-the-box for Linux and macOS.
+
+If you use Windows for DevOps, you're doing it wrong.
+
 ### AWS Business as Usual
   * AWS account capable of creating EC2 free tier eligible instances, RDS and CloudFront
   * AWS CLI installed and configured with a working aws_access_key_id and aws_secret_access_key
@@ -133,9 +138,12 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
 
     `ansible-playbook ec2_yum_install_packages_by_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"`
 
+    * Install WordPress and health check index.html
+    `ansible-playbook ec2_install_wp_by_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"`
+
 * Create TargetGroup and App LoadBalancer for WPServer
 
-  `ansible-playbook ec2_lb_create_target_group_by_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer lb_security_group=LBSecurityGroup"`
+  `ansible-playbook ec2_lb_create_by_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer lb_security_group=LBSecurityGroup"`
 
 ### Checks and clean up
 
@@ -169,5 +177,5 @@ Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
   - [x] Yum package scripts
   - [x] App Load Balancer instantiation and configuration
   - [x] A script to remove NAT Gateways and free EIP
-  - [ ] Wordpress installation script
+  - [x] Wordpress installation script
   - [ ] RDS instantiation and configuration

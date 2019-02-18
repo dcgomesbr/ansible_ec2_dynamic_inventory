@@ -1,7 +1,7 @@
 ---
 ### create a target group of EC2 instances by role to be used by the app load balancer
 ### example:
-### ansible-playbook ec2_lb_create_target_group_by_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer lb_security_group=LBSecurityGroup"
+### ansible-playbook ec2_lb_create_by_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer lb_security_group=LBSecurityGroup"
 
 - hosts: localhost
   connection: local
@@ -87,3 +87,8 @@
               - Type: forward # Required. Only 'forward' is accepted at this time
                 TargetGroupName: "{{ elb_tg.target_group_name }}"
         state: present
+      register: createdlb
+
+    - name: LB Public IP Address
+      debug:
+        msg: "WordPress will be accesible through: {{ createdlb.dns_name }}"

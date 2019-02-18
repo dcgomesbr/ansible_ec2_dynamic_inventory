@@ -14,7 +14,7 @@
         files_matching: "{{ ec2_bastion_role }}.yml"
 
   tasks:
-    - name: Get EC2 public IP 
+    - name: Get EC2 public IP
       run_once: true
       ec2_instance_facts:
         region: "{{ ec2_region }}"
@@ -33,3 +33,9 @@
         path: "roles/{{ ec2_role }}.yml"
         regexp: '^ec2_bastion: .*$'
         line: "ec2_bastion: {{ instances|json_query('instances[*].public_ip_address') | list | first}}"
+
+    - name: "Saves the public FQDN of the bastion to ssh_config"
+      lineinfile:
+        path: ssh_config
+        regexp: '^  Hostname .*$'
+        line: "  Hostname {{ instances|json_query('instances[*].public_dns_name') | list | first}}"

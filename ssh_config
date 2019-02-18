@@ -1,0 +1,8 @@
+Host bastion
+  Hostname ec2-18-212-146-74.compute-1.amazonaws.com
+  User ec2-user
+  IdentityFile keys/bastionkeypair.pem 
+Host 172.16.*.*
+  IdentityFile keys/bastionkeypair.pem 
+  User ec2-user
+  ProxyCommand ssh -F ssh_config -W %h:%p  ec2-user@bastion
