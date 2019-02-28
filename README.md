@@ -1,6 +1,8 @@
 # ansible_ec2_dynamic_inventory
 Some experiments with Ansible, ec2.py, AWS EC2 and dynamic inventory techniques
 
+ 2019-02-28: Yay! Finally, the project is complete! It will install a load balanced WordPress between two EC2 Instances.
+
 ## Pre-requisites:
 
 This was built to work out-of-the-box for Linux and macOS.
@@ -184,4 +186,4 @@ If you use Windows for DevOps, you're doing it wrong.
   - [x] App Load Balancer instantiation and configuration
   - [x] A script to remove NAT Gateways and free EIP
   - [x] Wordpress installation script
-  - [ ] RDS instantiation and configuration
+  - [x] RDS instantiation and configuration
