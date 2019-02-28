@@ -1,8 +1,8 @@
 ec2_subnet_name: "WikimediaPublicSubnetBastion"
 ec2_map_public: "yes"
 ec2_subnet_cidr: 172.16.0.0/24
-ec2_subnet_id: subnet-0a309f4b8a60b1a12
+ec2_subnet_id: subnet-0ba5465d06d5c69df
 ec2_igw_name: "Standard Internet Gateway"
-ec2_igw_id: igw-0442099e877cb76b0
+ec2_igw_id: igw-0a397550ab2d85181
 ec2_subnet_az: us-east-1a
 ec2_subnet_role: AdminJumpbox

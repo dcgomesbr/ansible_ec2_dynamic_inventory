@@ -1,10 +1,15 @@
 ---
 ### Deletes a RDS instance
-### ansible-playbook rds_get_facts.yml -e "ec2_region=us-east-1 rds_instance_name=wordpressdb"
+### ansible-playbook rds_get_facts.yml -e "ec2_region=us-east-1 rds_role=WordPressDB
 
 - hosts: localhost
   connection: local
   gather_facts: false
+  pre_tasks:
+    - name: Reads role variables for RDS {{ rds_role }}
+      include_vars:
+        dir: roles/
+        files_matching: "{{ rds_role }}.yml"
   tasks:
     - name: Deletes RDS instance "{{ rds_instance_name }}"
       rds:

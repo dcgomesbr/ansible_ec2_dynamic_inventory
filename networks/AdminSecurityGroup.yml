@@ -1,6 +1,6 @@
 sg_uses_restricted_ip: yes
-sg_restricted_ip: 186.248.95.250/32
-sg_group_id: sg-0276cf94ab036402f
+sg_restricted_ip: 191.185.62.164/32
+sg_group_id: sg-03029a248a9e751e7
 sg_name: "SSH access for admin"
 sg_description: "Restricted access to port 22"
 sg_rules:

@@ -1,6 +1,6 @@
 sg_uses_restricted_ip: no
 sg_restricted_ip: 0.0.0.0/0
-sg_group_id: sg-0c0124ce4542c94bb
+sg_group_id: sg-033e47220a632ff72
 sg_name: "WPServer"
 sg_description: "HTTP and HTTPS standard ports access"
 sg_rules:

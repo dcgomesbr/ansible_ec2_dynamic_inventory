@@ -3,7 +3,7 @@ ec2_image: "ami-0080e4c5bc078760e"
 ec2_keypair: "bastionkeypair"
 ec2_volume_size: 8
 ec2_count: 1
-ec2_bastion: 18.212.146.74
+ec2_bastion: 3.93.14.159
 ec2_lb_subnet_name: AppLoadBalancer
 ansible_ssh_common_args: '-F ssh_config -o ProxyCommand="ssh -W %h:%p -q ec2-user@{{ec2_bastion}}"'
 yum_packages:

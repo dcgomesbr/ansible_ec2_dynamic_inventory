@@ -1,5 +1,5 @@
 Host bastion
-  Hostname ec2-18-212-146-74.compute-1.amazonaws.com
+  Hostname ec2-3-93-14-159.compute-1.amazonaws.com
   User ec2-user
   IdentityFile keys/bastionkeypair.pem 
 Host 172.16.*.*

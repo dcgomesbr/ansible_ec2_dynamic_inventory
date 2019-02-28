@@ -1,0 +1,9 @@
+rds_instance_name: wordpressdb
+rds_db_engine: MySQL
+rds_db_size: 10
+rds_instance_type: db.t2.micro
+rds_username: wordpressdba
+rds_password: somepassword
+rds_endpoint: wordpressdb.c5drxn62ygrq.us-east-1.rds.amazonaws.com
+ec2_rds_subnet_role: MySQLDB
+wordpress_conf_file: WPServer_wp-config.php

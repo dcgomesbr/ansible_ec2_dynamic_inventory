@@ -70,3 +70,12 @@
         owner: root
         group: root
         mode: 0644
+
+    - name: Place wp-config.php
+      become: true
+      copy:
+        src: "wpconf/{{ ec2_role }}_wp-config.php"
+        dest: /var/www/html/wordpress/wp-config.php
+        owner: root
+        group: root
+        mode: 0644

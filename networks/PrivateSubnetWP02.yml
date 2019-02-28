@@ -1,6 +1,6 @@
 ec2_subnet_name: "WikimediaPrivateSubnetWP02"
 ec2_map_public: "no"
 ec2_subnet_cidr: 172.16.2.0/24
-ec2_subnet_id: subnet-025a6b2a36cc9759a
+ec2_subnet_id: subnet-0247091010861111e
 ec2_subnet_az: us-east-1b
 ec2_subnet_role: WPServer

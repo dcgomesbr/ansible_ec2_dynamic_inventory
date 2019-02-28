@@ -1,3 +1,3 @@
 ec2_vpc_name: "vpc_wikimedia"
 ec2_vpc_cidr: 172.16.0.0/16
-ec2_vpc_id: vpc-0fd4f79c14354aadc
+ec2_vpc_id: vpc-0af5fdae6372e44a4

@@ -1,6 +1,6 @@
 ec2_subnet_name: "WikimediaPrivateSubnetDB01"
 ec2_map_public: "no"
 ec2_subnet_cidr: 172.16.3.0/24
-ec2_subnet_id: subnet-03bf67a2855f8ca91
+ec2_subnet_id: subnet-0602adadfd76df5f3
 ec2_subnet_az: us-east-1a
 ec2_subnet_role: MySQLDB

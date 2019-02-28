@@ -1,0 +1,74 @@
+---
+### Lists facts about a RDS instance
+### ansible-playbook rds_create_instance.yml -e "ec2_region=us-east-1 rds_role=WordPressDB ec2_sg=RDSSecurityGroup"
+
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  pre_tasks:
+    - name: Reads role variables for RDS {{ rds_role }}
+      include_vars:
+        dir: roles/
+        files_matching: "{{ rds_role }}.yml"
+    - name: Reads role variables for Security Group {{ ec2_sg }}
+      include_vars:
+        dir: networks/
+        files_matching: "{{ ec2_sg }}.yml"
+  tasks:
+    - name: Get Subnet IDs for {{ ec2_rds_subnet_role }}
+      ec2_vpc_subnet_facts:
+        region: "{{ ec2_region }}"
+        filters:
+          "tag:Role": "{{ ec2_rds_subnet_role }}"
+      register: rdssubnets
+
+    - name: Create the list of subnets
+      set_fact:
+        rds_subnets: "{{ rds_subnets|default([]) + [item]}}"
+      with_items: "{{rdssubnets|json_query('subnets[*].subnet_id')}}"
+
+    - name: Create subnet group
+      rds_subnet_group:
+        region: "{{ ec2_region }}"
+        state: present
+        name: "{{ rds_instance_name }}SubnetGroup"
+        description: "{{ rds_instance_name }} Subnet Group"
+        subnets: "{{ rds_subnets }}"
+      register: rds_subnet_group
+
+    - name: Create RDS instance
+      rds:
+        command: create
+        region: "{{ ec2_region }}"
+        instance_name: "{{ rds_instance_name }}"
+        db_engine: "{{ rds_db_engine }}"
+        db_name: "{{ rds_instance_name }}"
+        size: "{{ rds_db_size }}"
+        instance_type: "{{ rds_instance_type }}"
+        username: "{{ rds_username }}"
+        password: "{{  rds_password }}"
+        subnet: "{{ rds_subnet_group.subnet_group.name }}"
+        vpc_security_groups: "{{ sg_group_id }}"
+        wait: true
+        wait_timeout: 600
+        tags:
+          Name: "{{ rds_instance_name }}"
+          Role: "{{ rds_role }}"
+      register: rds_instance
+
+    - name: Endpoint
+      debug:
+        msg: "The new db endpoint is {{ rds_instance.instance.endpoint }}"
+
+
+    - name: Saves the RDS endpoint to roles/{{ rds_role }}.yml
+      lineinfile:
+        path: "roles/{{ rds_role }}.yml"
+        regexp: '^rds_endpoint: .*$'
+        line: "rds_endpoint: {{ rds_instance.instance.endpoint }}"
+
+    - name: Saves the RDS endpoint to wpconf/{{ wordpress_conf_file }}
+      lineinfile:
+        path: "wpconf/{{ wordpress_conf_file }}"
+        regexp: '^.*DB_HOST.*$'
+        line: "define('DB_HOST', '{{ rds_instance.instance.endpoint }}');"

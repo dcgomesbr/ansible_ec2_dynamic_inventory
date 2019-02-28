@@ -94,6 +94,9 @@ If you use Windows for DevOps, you're doing it wrong.
  A SG for the Load Balancer too:
   `ansible-playbook vpc_create_security_group.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_sg=LBSecurityGroup"`
 
+ A SG for the RDS so app can access them
+ `ansible-playbook vpc_create_security_group.yml -e "ec2_region=us-east-1 ec2_network=WordpressVPC ec2_sg=RDSSecurityGroup"`
+
 * Create a NAT gateway
 
   This is useful for your instances behind a private network to have Internet access shielded by a NAT gateway so they can package installs and updates - this will create just one NAT Gateway and setup the outgoing routes for both WP Private Subnets
@@ -104,6 +107,9 @@ If you use Windows for DevOps, you're doing it wrong.
  The NAT gateway is created in the public subnet and allocates an Elastic IP (EIP) for it. Then, in the private subnet, you create a default route for it to addresses outside your subnets. The Security Groups must allow this, keep that in mind...
 
  Keep in mind that this thing costs MONEY. Shut it down once you're done installing packages in your instances and release the Elastic IP.
+
+### Instantiate the RDS MySQL
+ `ansible-playbook rds_create_instance.yml -e "ec2_region=us-east-1 rds_role=WordPressDB ec2_sg=RDSSecurityGroup"`
 
 ### Instantiate the EC2
 

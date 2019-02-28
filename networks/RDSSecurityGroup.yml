@@ -1,0 +1,14 @@
+sg_uses_restricted_ip: no
+sg_restricted_ip: 0.0.0.0/0
+sg_group_id: sg-0d28add7f2f668d15
+sg_name: "RDSSecurityGroup"
+sg_description: "MySQL standard ports access"
+sg_rules:
+  - proto: tcp
+    from_port: 3306
+    to_port: 3306
+    cidr_ip: 172.16.1.0/24
+  - proto: tcp
+    from_port: 3306
+    to_port: 3306
+    cidr_ip: 172.16.2.0/24
