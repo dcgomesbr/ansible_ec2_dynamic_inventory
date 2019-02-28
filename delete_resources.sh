@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ansible-playbook rds_get_facts.yml -e "ec2_region=us-east-1 rds_role=WordPressDB"
+ansible-playbook rds_delete_instance.yml -e "ec2_region=us-east-1 rds_role=WordPressDB"
 
 ansible-playbook ec2_lb_delete_by_role.yml -e "ec2_region=us-east-1 ec2_role=WPServer"
 

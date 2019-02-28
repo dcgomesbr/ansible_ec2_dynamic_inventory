@@ -1,6 +1,6 @@
 ---
 ### Deletes a RDS instance
-### ansible-playbook rds_get_facts.yml -e "ec2_region=us-east-1 rds_role=WordPressDB
+### ansible-playbook rds_delete_instance.yml -e "ec2_region=us-east-1 rds_role=WordPressDB"
 
 - hosts: localhost
   connection: local
